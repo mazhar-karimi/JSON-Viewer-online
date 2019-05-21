@@ -1,0 +1,146 @@
+<html>
+
+<head>
+
+    <style>
+        textarea{
+            font-family:'Alvi Nastaleeq';
+        }
+        .viewer-hidden {
+            opacity: 0;
+            transition: 2s;
+            -webkit-transition: opacity 2s;
+            
+        }
+
+        .viewer-shown {
+            opacity: 1;
+            transition: 2s;
+            -webkit-transition: opacity 2s;
+        }
+    </style>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+
+    <script>
+        var current = 0;
+        var jsondata = null;
+
+        function getnodes(node) {
+            for (const key in node) {
+
+                if (node.hasOwnProperty(key)) {
+
+                    var formgroup = document.createElement('div');
+                    formgroup.className = "form-group";
+
+                    var label = document.createElement('label');
+                    label.innerText = key;
+
+                    formgroup.appendChild(label);
+
+                    var textarea = document.createElement('textarea');
+                    textarea.className = "form-control";
+                    textarea.innerText = node[key];
+
+                    let totalwords = parseFloat(textarea.innerText.split(' ').length);
+                    textarea.rows = Math.floor(totalwords / 20);
+                    textarea.style='font-family:Alvi Nastaleeq';
+
+                    formgroup.appendChild(textarea);
+
+                    myform.appendChild(formgroup);
+
+                    // //console.log(key);
+                    // const element = node[key];
+                    // console.log(element);
+                }
+            }
+        }
+        function showdata() {
+            var opener = document.getElementById('myform');
+            opener.classList.remove('viewer-shown');
+            opener.classList.add('viewer-hidden');
+
+            if (Array.isArray(jsondata)) {
+                document.getElementById('pageno').value = current + 1;
+                const node = jsondata[current];
+                var myform = document.getElementById('myform');
+                myform.innerHTML = "";
+                getnodes(node);
+
+                opener.classList.remove('viewer-hidden');
+                opener.classList.add('viewer-shown');
+            }
+        }
+
+        function go(ri) {
+            current += ri;
+            showdata();
+        }
+        function Open() {
+            var input = document.createElement('input');
+            input.type = "file";
+            input.multiple = false;
+
+            input.onchange = function () {
+                var file = input.files[0];
+
+                var reader = new FileReader();
+                reader.onload = function (resp) {
+                    jsondata = JSON.parse(resp.target.result);
+
+                    if (Array.isArray(jsondata)) {
+                        document.getElementById('totalpages').innerText = jsondata.length;
+                    }
+                    showdata();
+
+                };
+
+                reader.readAsText(file, "utf-8");
+            };
+
+            input.click();
+
+
+        }
+        function pageno_enter(pageno) {
+            if (event.key == "Enter") {
+                pageno = parseInt(pageno.value);
+                current = pageno - 1;
+                showdata();
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div id="opener" class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <input type="button" class="btn btn-primary" onclick="Open()" value="Open" />
+                </h5>
+            </div>
+        </div>
+        <div id="viewer" class="card">
+            <div>
+                <button onclick="go(-1)">
+                    Back
+                </button>
+                <button onclick="go(1)">
+                    Next
+                </button>
+                <input type="text" id="pageno" onkeyup="pageno_enter(this)" value="1" style="width:40px;" />
+                <span>/</span>
+                <span id="totalpages"></span>
+            </div>
+            <form class="form viewer-hidden" id="myform">
+
+            </form>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
